@@ -8,8 +8,12 @@ from bpy.props import (StringProperty,
 from bpy.types import (Panel,
                        PropertyGroup,
                        Operator,
+                       Object,
+                       Context
                        )
-import bpy, os, json
+import bpy
+import os
+import json
 
 bl_info = {
     "name": "ReMapper Exporter",
@@ -59,6 +63,21 @@ def getabsfilename(default: str, path: str):
 
     return filename
 
+def colortolist(color):
+    return [color[0], color[1], color[2], color[3]]
+
+
+def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
+    objjson = {}
+
+    if (obj.material_slots):
+        if (len(obj.material_slots) > 0):
+            objjson["track"] = obj.material_slots[0].material.name
+        if (len(obj.material_slots) > 1):
+            objjson["color"] = colortolist(obj.material_slots[1].material.node_tree.nodes["Principled BSDF"].inputs[0].default_value)
+
+    return objjson
+
 
 class BlenderToJSON(Operator):
     bl_label = "Export"
@@ -70,19 +89,17 @@ class BlenderToJSON(Operator):
         paneldata = scene.paneldata
         filename = getabsfilename(scene.name, paneldata.filename)
         output = {
-            "cubes": []
+            "objects": []
         }
 
         objects = bpy.context.scene.objects
 
         if len(bpy.context.selected_objects) != 0:
             objects = bpy.context.selected_objects
-        
-        for obj in objects:
-            cube = {}
-            cube["name"] = obj.name
 
-            output["cubes"].append(cube)
+        for obj in objects:
+            objjson = getjsonfromobject(obj, paneldata.animations)
+            output["objects"].append(objjson)
 
         file = open(filename, "w")
         file.write(json.dumps(output, indent=2))
