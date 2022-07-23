@@ -17,6 +17,8 @@ import bpy
 import os
 import json
 
+from mathutils import Euler, Quaternion
+
 bl_info = {
     "name": "ReMapper Exporter",
     "author": "Swifter",
@@ -68,22 +70,35 @@ def tolist(inputarr, callback=None):
     return arr
 
 
-def processtransform(pos: List, rot: List, scale: List):
-    outputjson = {
-        "pos": tolist(pos, lambda x: math.fabs(x)),
-        "rot": tolist(rot, lambda x: math.degrees(math.fabs(x))),
-        "scale": tolist(scale, lambda x: math.fabs(x))
-    }
+def swapyz(arr: List):
+    return [arr[0], arr[2], arr[1]]
 
-    jsonpos = outputjson["pos"]
-    outputjson["pos"] = [jsonpos[0], jsonpos[2], jsonpos[1]]
+
+def processtransform(pos: List, rot: List, scale: List, order: str):
+    eul = Euler(rot, order)
+    q = Quaternion()
+    q.rotate(eul)
+    eul = Euler([0, 0, 0], "YXZ")
+    eul.rotate(q)
+    rot = [eul.x, eul.y, eul.z]
+
+    pos = swapyz(tolist(pos))
+    rot = swapyz(tolist(rot, lambda x: -math.degrees(x)))
+    scale = swapyz(tolist(scale, lambda x: math.fabs(x)))
+
+    outputjson = {
+        "pos": pos,
+        "rot": rot,
+        "scale": scale
+    }
 
     return outputjson
 
 
 def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
     # TODO: Make this work for parenting stuff too. This is just rough testing for now
-    objjson = processtransform(obj.location, obj.rotation_euler, obj.scale)
+    objjson = processtransform(
+        obj.location, obj.rotation_euler, obj.scale, obj.rotation_mode)
 
     if (obj.material_slots):
         objjson["track"] = obj.material_slots[0].material.name
@@ -115,6 +130,7 @@ class BlenderToJSON(Operator):
 
         for obj in objects:
             x: Object = obj
+            print(obj.rotation_mode)
             objjson = getjsonfromobject(x, paneldata.animations)
             output["objects"].append(objjson)
 
@@ -122,8 +138,8 @@ class BlenderToJSON(Operator):
         file.write(json.dumps(output, indent=2))
         file.close()
 
-        self.report({"INFO"}, "Export of {} objects to \"{}\" completed"
-        .format(len(objects), os.path.basename(filename)))
+        self.report({"INFO"}, "Exported {} objects to \"{}\""
+                    .format(len(objects), os.path.basename(filename)))
         return {'FINISHED'}
 
 # PANEL
