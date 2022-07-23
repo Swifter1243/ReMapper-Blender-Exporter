@@ -1,3 +1,5 @@
+import math
+from typing import List
 from bpy.props import (StringProperty,
                        IntProperty,
                        FloatProperty,
@@ -58,29 +60,43 @@ def getabsfilename(default: str, path: str):
     else:
         if (path != ""):
             filename = path
-        filename += ".json"
+        filename += ".rmmodel"
         filename = os.path.join(bpy.path.abspath("//"), filename)
 
     return filename
 
-def tolist(inputarr):
+
+def tolist(inputarr, callback=None):
     arr = []
     for i in inputarr:
+        if (callback != None):
+            i = callback(i)
         arr.append(i)
     return arr
 
 
-def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
-    objjson = {
-        "pos": tolist(obj.location),
-        "rot": tolist(obj.rotation_euler),
-        "scale": tolist(obj.scale) 
+def processtransform(pos: List, rot: List, scale: List):
+    outputjson = {
+        "pos": tolist(pos, lambda x: math.fabs(x)),
+        "rot": tolist(rot, lambda x: math.degrees(math.fabs(x))),
+        "scale": tolist(scale, lambda x: math.fabs(x))
     }
+
+    jsonpos = outputjson["pos"]
+    outputjson["pos"] = [jsonpos[0], jsonpos[2], jsonpos[1]]
+
+    return outputjson
+
+
+def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
+    # TODO: Make this work for parenting stuff too. This is just rough testing for now
+    objjson = processtransform(obj.location, obj.rotation_euler, obj.scale)
 
     if (obj.material_slots):
         objjson["track"] = obj.material_slots[0].material.name
         if (len(obj.material_slots) > 1):
-            objjson["color"] = tolist(obj.material_slots[1].material.node_tree.nodes["Principled BSDF"].inputs[0].default_value)
+            objjson["color"] = tolist(
+                obj.material_slots[1].material.node_tree.nodes["Principled BSDF"].inputs[0].default_value)
 
     return objjson
 
