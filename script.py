@@ -63,18 +63,24 @@ def getabsfilename(default: str, path: str):
 
     return filename
 
-def colortolist(color):
-    return [color[0], color[1], color[2], color[3]]
+def tolist(inputarr):
+    arr = []
+    for i in inputarr:
+        arr.append(i)
+    return arr
 
 
 def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
-    objjson = {}
+    objjson = {
+        "pos": tolist(obj.location),
+        "rot": tolist(obj.rotation_euler),
+        "scale": tolist(obj.scale) 
+    }
 
     if (obj.material_slots):
-        if (len(obj.material_slots) > 0):
-            objjson["track"] = obj.material_slots[0].material.name
+        objjson["track"] = obj.material_slots[0].material.name
         if (len(obj.material_slots) > 1):
-            objjson["color"] = colortolist(obj.material_slots[1].material.node_tree.nodes["Principled BSDF"].inputs[0].default_value)
+            objjson["color"] = tolist(obj.material_slots[1].material.node_tree.nodes["Principled BSDF"].inputs[0].default_value)
 
     return objjson
 
