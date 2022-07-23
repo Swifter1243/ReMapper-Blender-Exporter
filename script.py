@@ -9,7 +9,7 @@ from bpy.types import (Panel,
                        PropertyGroup,
                        Operator,
                        )
-import bpy
+import bpy, os
 
 bl_info = {
     "name": "ReMapper Exporter",
@@ -39,7 +39,7 @@ class ExporterProperties(PropertyGroup):
 # OPERATORS (Main Script)
 
 
-def ShowMessageBox(message="", title="Message Box", icon='INFO'):
+def showmessagebox(message = "", title = "Message Box", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
 
@@ -52,7 +52,25 @@ class BlenderToJSON(Operator):
     bl_description = "Export to JSON"
 
     def execute(self, context):
-        ShowMessageBox("Export completed", "Export", 'EXPORT')
+        scene = context.scene
+        paneldata = scene.my_tool
+
+        inputfilename = paneldata.filename
+        filename = scene.name
+
+        if (os.path.isabs(inputfilename)):
+            filename = inputfilename
+        else:
+            if (inputfilename != ""):
+                filename = inputfilename
+            filename += ".json"
+            filename = os.path.join(bpy.path.abspath("//"), filename)
+
+        file = open(filename, "w")
+        file.write("test")
+        file.close()
+
+        showmessagebox("Export completed", "Export", 'EXPORT')
         return {'FINISHED'}
 
 # PANEL
@@ -63,6 +81,7 @@ class ExporterPanel(Panel):
     bl_idname = "OBJECT_PT_CustomPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
+    bl_category = "RM Exporter"
 
     @classmethod
     def poll(self, context):
@@ -71,10 +90,10 @@ class ExporterPanel(Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        mytool = scene.my_tool
+        panelData = scene.my_tool
 
-        layout.prop(mytool, "filename")
-        layout.prop(mytool, "animations")
+        layout.prop(panelData, "filename")
+        layout.prop(panelData, "animations")
         layout.operator("rm.exporter")
 
 
