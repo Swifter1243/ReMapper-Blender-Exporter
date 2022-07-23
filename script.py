@@ -36,7 +36,14 @@ class ExporterProperties(PropertyGroup):
         default=True
     )
 
-# OPERATORS
+# OPERATORS (Main Script)
+
+
+def ShowMessageBox(message="", title="Message Box", icon='INFO'):
+    def draw(self, context):
+        self.layout.label(text=message)
+
+    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
 
 
 class BlenderToJSON(Operator):
@@ -45,6 +52,7 @@ class BlenderToJSON(Operator):
     bl_description = "Export to JSON"
 
     def execute(self, context):
+        ShowMessageBox("Export completed", "Export", 'EXPORT')
         return {'FINISHED'}
 
 # PANEL
