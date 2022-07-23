@@ -36,12 +36,6 @@ class ExporterProperties(PropertyGroup):
         default=True
     )
 
-    selected: BoolProperty(
-        name="Only Selected",
-        description="Whether to only export selected objects.",
-        default=False
-    )
-
 # OPERATORS (Main Script)
 
 
@@ -79,19 +73,19 @@ class BlenderToJSON(Operator):
             "cubes": []
         }
 
-        if (paneldata.selected == False):
-            bpy.ops.object.select_all(action='SELECT')
+        objects = bpy.context.scene.objects
 
-        selection = bpy.context.selected_objects
+        if len(bpy.context.selected_objects) != 0:
+            objects = bpy.context.selected_objects
         
-        for obj in selection:
+        for obj in objects:
             cube = {}
             cube["name"] = obj.name
 
             output["cubes"].append(cube)
 
         file = open(filename, "w")
-        file.write(json.dumps(output))
+        file.write(json.dumps(output, indent=2))
         file.close()
 
         showmessagebox("Export completed", "Export", 'EXPORT')
@@ -118,7 +112,6 @@ class ExporterPanel(Panel):
 
         layout.prop(paneldata, "filename")
         layout.prop(paneldata, "animations")
-        layout.prop(paneldata, "selected")
         layout.operator("rm.exporter")
 
 
