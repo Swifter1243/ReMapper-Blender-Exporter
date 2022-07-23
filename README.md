@@ -1,2 +1,2 @@
-# Beat-Saber
-scuffed walls, beat walls, blends etc, used in my maps
+# ReMapper Blender Exporter
+I will care about writing this later lol
