@@ -17,7 +17,7 @@ import bpy
 import os
 import json
 
-from mathutils import Euler, Quaternion
+from mathutils import Euler, Matrix, Quaternion, Vector
 
 bl_info = {
     "name": "ReMapper Exporter",
@@ -74,12 +74,14 @@ def swapyz(arr: List):
     return [arr[0], arr[2], arr[1]]
 
 
-def processtransform(pos: List, rot: List, scale: List, order: str):
-    eul = Euler(rot, order)
-    q = Quaternion()
-    q.rotate(eul)
+def processtransform(matrix: Matrix):
+    transform = matrix.decompose()
+    pos = transform[0]
+    rot = transform[1]
+    scale = transform[2]
+
     eul = Euler([0, 0, 0], "YXZ")
-    eul.rotate(q)
+    eul.rotate(rot)
     rot = [eul.x, eul.y, eul.z]
 
     pos = swapyz(tolist(pos))
@@ -96,9 +98,7 @@ def processtransform(pos: List, rot: List, scale: List, order: str):
 
 
 def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
-    # TODO: Make this work for parenting stuff too. This is just rough testing for now
-    objjson = processtransform(
-        obj.location, obj.rotation_euler, obj.scale, obj.rotation_mode)
+    objjson = processtransform(obj.matrix_world)
 
     if (obj.material_slots):
         objjson["track"] = obj.material_slots[0].material.name
@@ -130,7 +130,6 @@ class BlenderToJSON(Operator):
 
         for obj in objects:
             x: Object = obj
-            print(obj.rotation_mode)
             objjson = getjsonfromobject(x, paneldata.animations)
             output["objects"].append(objjson)
 
