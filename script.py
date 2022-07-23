@@ -9,8 +9,7 @@ from bpy.types import (Panel,
                        PropertyGroup,
                        Operator,
                        )
-import bpy
-import os
+import bpy, os, json
 
 bl_info = {
     "name": "ReMapper Exporter",
@@ -74,11 +73,25 @@ class BlenderToJSON(Operator):
 
     def execute(self, context):
         scene = context.scene
-        paneldata = scene.my_tool
+        paneldata = scene.paneldata
         filename = getabsfilename(scene.name, paneldata.filename)
+        output = {
+            "cubes": []
+        }
+
+        if (paneldata.selected == False):
+            bpy.ops.object.select_all(action='SELECT')
+
+        selection = bpy.context.selected_objects
+        
+        for obj in selection:
+            cube = {}
+            cube["name"] = obj.name
+
+            output["cubes"].append(cube)
 
         file = open(filename, "w")
-        file.write("test")
+        file.write(json.dumps(output))
         file.close()
 
         showmessagebox("Export completed", "Export", 'EXPORT')
@@ -101,7 +114,7 @@ class ExporterPanel(Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        paneldata = scene.my_tool
+        paneldata = scene.paneldata
 
         layout.prop(paneldata, "filename")
         layout.prop(paneldata, "animations")
@@ -124,7 +137,7 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.types.Scene.my_tool = PointerProperty(type=ExporterProperties)
+    bpy.types.Scene.paneldata = PointerProperty(type=ExporterProperties)
 
 
 def unregister():
@@ -132,7 +145,7 @@ def unregister():
     for cls in reversed(classes):
         unregister_class(cls)
 
-    del bpy.types.Scene.my_tool
+    del bpy.types.Scene.paneldata
 
 
 if __name__ == "__main__":
