@@ -9,7 +9,8 @@ from bpy.types import (Panel,
                        PropertyGroup,
                        Operator,
                        )
-import bpy, os
+import bpy
+import os
 
 bl_info = {
     "name": "ReMapper Exporter",
@@ -36,14 +37,34 @@ class ExporterProperties(PropertyGroup):
         default=True
     )
 
+    selected: BoolProperty(
+        name="Only Selected",
+        description="Whether to only export selected objects.",
+        default=False
+    )
+
 # OPERATORS (Main Script)
 
 
-def showmessagebox(message = "", title = "Message Box", icon = 'INFO'):
+def showmessagebox(message="", title="Message Box", icon='INFO'):
     def draw(self, context):
         self.layout.label(text=message)
 
     bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
+
+
+def getabsfilename(default: str, path: str):
+    filename = default
+
+    if (os.path.isabs(path)):
+        filename = path
+    else:
+        if (path != ""):
+            filename = path
+        filename += ".json"
+        filename = os.path.join(bpy.path.abspath("//"), filename)
+
+    return filename
 
 
 class BlenderToJSON(Operator):
@@ -54,17 +75,7 @@ class BlenderToJSON(Operator):
     def execute(self, context):
         scene = context.scene
         paneldata = scene.my_tool
-
-        inputfilename = paneldata.filename
-        filename = scene.name
-
-        if (os.path.isabs(inputfilename)):
-            filename = inputfilename
-        else:
-            if (inputfilename != ""):
-                filename = inputfilename
-            filename += ".json"
-            filename = os.path.join(bpy.path.abspath("//"), filename)
+        filename = getabsfilename(scene.name, paneldata.filename)
 
         file = open(filename, "w")
         file.write("test")
@@ -90,10 +101,11 @@ class ExporterPanel(Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        panelData = scene.my_tool
+        paneldata = scene.my_tool
 
-        layout.prop(panelData, "filename")
-        layout.prop(panelData, "animations")
+        layout.prop(paneldata, "filename")
+        layout.prop(paneldata, "animations")
+        layout.prop(paneldata, "selected")
         layout.operator("rm.exporter")
 
 
