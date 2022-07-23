@@ -45,13 +45,6 @@ class ExporterProperties(PropertyGroup):
 # OPERATORS (Main Script)
 
 
-def showmessagebox(message="", title="Message Box", icon='INFO'):
-    def draw(self, context):
-        self.layout.label(text=message)
-
-    bpy.context.window_manager.popup_menu(draw, title=title, icon=icon)
-
-
 def getabsfilename(default: str, path: str):
     filename = default
 
@@ -114,20 +107,23 @@ class BlenderToJSON(Operator):
             "objects": []
         }
 
-        objects = bpy.context.scene.objects
+        # TODO: Include hidden objects, just exclude disabled collections
+        objects = bpy.context.visible_objects
 
         if len(bpy.context.selected_objects) != 0:
             objects = bpy.context.selected_objects
 
         for obj in objects:
-            objjson = getjsonfromobject(obj, paneldata.animations)
+            x: Object = obj
+            objjson = getjsonfromobject(x, paneldata.animations)
             output["objects"].append(objjson)
 
         file = open(filename, "w")
         file.write(json.dumps(output, indent=2))
         file.close()
 
-        showmessagebox("Export completed", "Export", 'EXPORT')
+        self.report({"INFO"}, "Export of {} objects to \"{}\" completed"
+        .format(len(objects), os.path.basename(filename)))
         return {'FINISHED'}
 
 # PANEL
