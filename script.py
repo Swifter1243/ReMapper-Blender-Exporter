@@ -99,7 +99,7 @@ def processtransform(matrix: Matrix):
     return outputjson
 
 
-def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
+def getjsonfromobject(obj: Object):
     objjson = processtransform(obj.matrix_world)
 
     if (obj.material_slots):
@@ -110,6 +110,30 @@ def getjsonfromobject(obj: Object, animations=True, framespan=[0, 0]):
 
     return objjson
 
+def getobjects(context: Context):
+    # TODO: Include hidden objects, just exclude disabled collections
+    # TODO: Only get whitelisted object types
+    objects = context.visible_objects
+
+    if len(context.selected_objects) != 0:
+            objects = context.selected_objects
+
+    return objects
+
+def gettime(start, dur, frame):
+    return (frame - start) / dur
+
+def pushkeyframe(matrix, time, lookup):
+    transform = processtransform(matrix)
+
+    transform["pos"].append(time)
+    transform["rot"].append(time)
+    transform["scale"].append(time)
+
+    lookup["pos"].append(transform["pos"])
+    lookup["rot"].append(transform["rot"])
+    lookup["scale"].append(transform["scale"])
+    
 
 class BlenderToJSON(Operator):
     bl_label = "Export"
@@ -124,19 +148,66 @@ class BlenderToJSON(Operator):
             "objects": []
         }
 
-        # TODO: Include hidden objects, just exclude disabled collections
-        objects = bpy.context.visible_objects
+        objects = getobjects(context)
+        
+        if (paneldata.animations):
+            returnframe = scene.frame_current
+            startframe = scene.frame_start
+            endframe = scene.frame_end
+            framedur = endframe - startframe
 
-        if len(bpy.context.selected_objects) != 0:
-            objects = bpy.context.selected_objects
+            objlookup = {}
 
-        for obj in objects:
-            x: Object = obj
-            objjson = getjsonfromobject(x, paneldata.animations)
-            output["objects"].append(objjson)
+            for frame in range(startframe, endframe + 1):
+                scene.frame_set(frame)
+                time = gettime(startframe, framedur, frame)
+
+                for obj in objects:
+                    x: Object = obj
+                    
+                    if (x.name not in objlookup.keys()):
+                        objlookup[x.name] = {
+                            "lastmatrix": x.matrix_world.copy(),
+                            "hasrested": False,
+                            "data": getjsonfromobject(x),
+                            "pos": [],
+                            "rot": [],
+                            "scale": []
+                        }
+
+                    lookup = objlookup[x.name]
+
+                    if (lookup["lastmatrix"] == x.matrix_world):
+                        lookup["hasrested"] = True
+                    else:
+                        if (lookup["hasrested"]):
+                            holdtime = gettime(startframe, framedur, frame - 1)
+                            pushkeyframe(lookup["lastmatrix"], holdtime, lookup)
+
+                        pushkeyframe(x.matrix_world.copy(), time, lookup)
+
+                        lookup["lastmatrix"] = x.matrix_world.copy()
+                        lookup["hasrested"] = False
+
+            for lookup in objlookup.values():
+                objjson = lookup["data"]
+
+                if (len(lookup["pos"]) > 0):
+                    objjson["pos"] = lookup["pos"]
+                    objjson["rot"] = lookup["rot"]
+                    objjson["scale"] = lookup["scale"]
+
+                output["objects"].append(objjson)
+
+            scene.frame_set(returnframe)
+        else:
+            for obj in objects:
+                x: Object = obj
+                objjson = getjsonfromobject(x)
+                output["objects"].append(objjson)
 
         file = open(filename, "w")
-        file.write(json.dumps(output, indent=2))
+        file.write(json.dumps(output))
         file.close()
 
         self.report({"INFO"}, "Exported {} objects to \"{}\""
