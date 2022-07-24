@@ -1,10 +1,7 @@
 import math
 from typing import List
 from bpy.props import (StringProperty,
-                       IntProperty,
-                       FloatProperty,
                        PointerProperty,
-                       EnumProperty,
                        BoolProperty,
                        )
 from bpy.types import (Panel,
@@ -17,7 +14,7 @@ import bpy
 import os
 import json
 
-from mathutils import Euler, Matrix, Quaternion, Vector
+from mathutils import Euler, Matrix
 
 bl_info = {
     "name": "ReMapper Exporter",
