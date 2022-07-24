@@ -74,6 +74,8 @@ def swapyz(arr: List):
     return [arr[0], arr[2], arr[1]]
 
 
+RESIZEAMOUNT = 2
+
 def processtransform(matrix: Matrix):
     transform = matrix.decompose()
     pos = transform[0]
@@ -84,9 +86,9 @@ def processtransform(matrix: Matrix):
     eul.rotate(rot)
     rot = [eul.x, eul.y, eul.z]
 
-    pos = swapyz(tolist(pos))
+    pos = swapyz(tolist(pos, lambda x: x * RESIZEAMOUNT))
     rot = swapyz(tolist(rot, lambda x: -math.degrees(x)))
-    scale = swapyz(tolist(scale, lambda x: math.fabs(x)))
+    scale = swapyz(tolist(scale, lambda x: math.fabs(x) * RESIZEAMOUNT))
 
     outputjson = {
         "pos": pos,
