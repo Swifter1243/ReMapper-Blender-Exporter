@@ -1,16 +1,15 @@
 import math
-from typing import Dict, List
+from typing import List
 from bpy.props import (StringProperty,
                        PointerProperty,
                        BoolProperty,
+                       IntProperty
                        )
 from bpy.types import (Panel,
                        PropertyGroup,
                        Operator,
                        Object,
-                       Context,
-                       Collection,
-                       LayerCollection
+                       Context
                        )
 import bpy
 import os
@@ -33,14 +32,21 @@ bl_info = {
 class ExporterProperties(PropertyGroup):
     filename: StringProperty(
         name="File Name",
-        description="The file to export this model to. Defaults to scene name.",
+        description="The file to export this model to. Defaults to scene name",
         default=""
     )
 
     animations: BoolProperty(
         name="Export Animations",
-        description="Whether animations will be exported.",
+        description="Whether animations will be exported",
         default=True
+    )
+
+    samplerate: IntProperty(
+        name="Sample Rate",
+        description="The step of keyframe sampling",
+        default=1,
+        min=1
     )
 
 # OPERATORS (Main Script)
@@ -176,9 +182,11 @@ class BlenderToJSON(Operator):
 
             objlookup = {}
 
-            for frame in range(startframe, endframe + 1):
+            frame = startframe
+            while (frame <= endframe):
                 scene.frame_set(frame)
                 time = gettime(startframe, framedur, frame)
+                print(time)
 
                 for obj in objects:
                     if (obj.name not in objlookup.keys()):
@@ -197,14 +205,23 @@ class BlenderToJSON(Operator):
                         lookup["hasrested"] = True
                     else:
                         if (lookup["hasrested"]):
-                            holdtime = gettime(startframe, framedur, frame - 1)
+                            if (len(lookup["pos"]) == 0):
+                                holdtime = gettime(startframe, framedur, startframe)
+                            else:
+                                holdtime = gettime(startframe, framedur, frame - 1)
                             pushkeyframe(
-                                lookup["lastmatrix"], holdtime, lookup)
+                                    lookup["lastmatrix"], holdtime, lookup)
 
                         pushkeyframe(obj.matrix_world.copy(), time, lookup)
 
                         lookup["lastmatrix"] = obj.matrix_world.copy()
                         lookup["hasrested"] = False
+
+                if (frame == endframe):
+                    break
+                frame += paneldata.samplerate
+                if (frame > endframe):
+                    frame = endframe
 
             for lookup in objlookup.values():
                 objjson = lookup["data"]
@@ -251,6 +268,7 @@ class ExporterPanel(Panel):
 
         layout.prop(paneldata, "filename")
         layout.prop(paneldata, "animations")
+        layout.prop(paneldata, "samplerate")
         layout.operator("rm.exporter")
 
 
