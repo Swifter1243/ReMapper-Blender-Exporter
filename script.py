@@ -109,13 +109,19 @@ def getjsonfromobject(obj: Object):
 
 def getobjects(context: Context):
     # TODO: Include hidden objects, just exclude disabled collections
-    # TODO: Only get whitelisted object types
     objects = context.visible_objects
 
     if len(context.selected_objects) != 0:
             objects = context.selected_objects
 
-    return objects
+    filteredobjects: List[Object] = []
+
+    for obj in objects:
+        x: Object = obj
+        if (x.type == "MESH"):
+            filteredobjects.append(x)
+
+    return filteredobjects
 
 def gettime(start, dur, frame):
     return (frame - start) / dur
@@ -160,30 +166,28 @@ class BlenderToJSON(Operator):
                 time = gettime(startframe, framedur, frame)
 
                 for obj in objects:
-                    x: Object = obj
-                    
-                    if (x.name not in objlookup.keys()):
-                        objlookup[x.name] = {
-                            "lastmatrix": x.matrix_world.copy(),
+                    if (obj.name not in objlookup.keys()):
+                        objlookup[obj.name] = {
+                            "lastmatrix": obj.matrix_world.copy(),
                             "hasrested": False,
-                            "data": getjsonfromobject(x),
+                            "data": getjsonfromobject(obj),
                             "pos": [],
                             "rot": [],
                             "scale": []
                         }
 
-                    lookup = objlookup[x.name]
+                    lookup = objlookup[obj.name]
 
-                    if (lookup["lastmatrix"] == x.matrix_world):
+                    if (lookup["lastmatrix"] == obj.matrix_world):
                         lookup["hasrested"] = True
                     else:
                         if (lookup["hasrested"]):
                             holdtime = gettime(startframe, framedur, frame - 1)
                             pushkeyframe(lookup["lastmatrix"], holdtime, lookup)
 
-                        pushkeyframe(x.matrix_world.copy(), time, lookup)
+                        pushkeyframe(obj.matrix_world.copy(), time, lookup)
 
-                        lookup["lastmatrix"] = x.matrix_world.copy()
+                        lookup["lastmatrix"] = obj.matrix_world.copy()
                         lookup["hasrested"] = False
 
             for lookup in objlookup.values():
@@ -199,8 +203,7 @@ class BlenderToJSON(Operator):
             scene.frame_set(returnframe)
         else:
             for obj in objects:
-                x: Object = obj
-                objjson = getjsonfromobject(x)
+                objjson = getjsonfromobject(obj)
                 output["objects"].append(objjson)
 
         file = open(filename, "w")
