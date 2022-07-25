@@ -1,5 +1,5 @@
 import math
-from typing import List
+from typing import Dict, List
 from bpy.props import (StringProperty,
                        PointerProperty,
                        BoolProperty,
@@ -8,7 +8,9 @@ from bpy.types import (Panel,
                        PropertyGroup,
                        Operator,
                        Object,
-                       Context
+                       Context,
+                       Collection,
+                       LayerCollection
                        )
 import bpy
 import os
@@ -73,6 +75,7 @@ def swapyz(arr: List):
 
 RESIZEAMOUNT = 2
 
+
 def processtransform(matrix: Matrix):
     transform = matrix.decompose()
     pos = transform[0]
@@ -107,24 +110,36 @@ def getjsonfromobject(obj: Object):
 
     return objjson
 
-def getobjects(context: Context):
-    # TODO: Include hidden objects, just exclude disabled collections
-    objects = context.visible_objects
 
+def getobjects(context: Context):
     if len(context.selected_objects) != 0:
-            objects = context.selected_objects
+        objects = context.selected_objects
+    else:
+        invisible: List[Object] = []
+
+        for obj in context.scene.objects:
+            if (obj.hide_get()):
+                invisible.append(obj)
+                obj.hide_set(False)
+
+        objects = context.visible_objects
+
+        for obj in invisible:
+            obj.hide_set(True)
 
     filteredobjects: List[Object] = []
 
     for obj in objects:
-        x: Object = obj
-        if (x.type == "MESH"):
-            filteredobjects.append(x)
+        obj: Object
+        if (obj.type == "MESH"):
+            filteredobjects.append(obj)
 
     return filteredobjects
 
+
 def gettime(start, dur, frame):
     return (frame - start) / dur
+
 
 def pushkeyframe(matrix, time, lookup):
     transform = processtransform(matrix)
@@ -136,7 +151,7 @@ def pushkeyframe(matrix, time, lookup):
     lookup["pos"].append(transform["pos"])
     lookup["rot"].append(transform["rot"])
     lookup["scale"].append(transform["scale"])
-    
+
 
 class BlenderToJSON(Operator):
     bl_label = "Export"
@@ -152,7 +167,7 @@ class BlenderToJSON(Operator):
         }
 
         objects = getobjects(context)
-        
+
         if (paneldata.animations):
             returnframe = scene.frame_current
             startframe = scene.frame_start
@@ -183,7 +198,8 @@ class BlenderToJSON(Operator):
                     else:
                         if (lookup["hasrested"]):
                             holdtime = gettime(startframe, framedur, frame - 1)
-                            pushkeyframe(lookup["lastmatrix"], holdtime, lookup)
+                            pushkeyframe(
+                                lookup["lastmatrix"], holdtime, lookup)
 
                         pushkeyframe(obj.matrix_world.copy(), time, lookup)
 
