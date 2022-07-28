@@ -108,11 +108,12 @@ def processtransform(matrix: Matrix):
 def getjsonfromobject(obj: Object):
     objjson = processtransform(obj.matrix_world)
 
+    objjson["color"] = tolist(obj.color)
+
     if (obj.material_slots):
-        objjson["track"] = obj.material_slots[0].material.name
-        if (len(obj.material_slots) > 1):
-            objjson["color"] = tolist(
-                obj.material_slots[1].material.node_tree.nodes["Principled BSDF"].inputs[0].default_value)
+        if (obj.material_slots[0] != None):
+            if (obj.material_slots[0].material != None):
+                objjson["track"] = obj.material_slots[0].material.name
 
     return objjson
 
@@ -186,7 +187,6 @@ class BlenderToJSON(Operator):
             while (frame <= endframe):
                 scene.frame_set(frame)
                 time = gettime(startframe, framedur, frame)
-                print(time)
 
                 for obj in objects:
                     if (obj.name not in objlookup.keys()):
@@ -206,11 +206,13 @@ class BlenderToJSON(Operator):
                     else:
                         if (lookup["hasrested"]):
                             if (len(lookup["pos"]) == 0):
-                                holdtime = gettime(startframe, framedur, startframe)
+                                holdtime = gettime(
+                                    startframe, framedur, startframe)
                             else:
-                                holdtime = gettime(startframe, framedur, frame - 1)
+                                holdtime = gettime(
+                                    startframe, framedur, frame - 1)
                             pushkeyframe(
-                                    lookup["lastmatrix"], holdtime, lookup)
+                                lookup["lastmatrix"], holdtime, lookup)
 
                         pushkeyframe(obj.matrix_world.copy(), time, lookup)
 
