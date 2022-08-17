@@ -20,7 +20,7 @@ from mathutils import Euler, Matrix
 bl_info = {
     "name": "ReMapper Exporter",
     "author": "Swifter",
-    "version": "0.02",
+    "version": "0.03",
     "blender": (2, 80, 0),
     "location": "View3d > Sidepanel",
     "description": "Blender Plugin to export scenes into models which are used by ReMapper."
@@ -54,14 +54,13 @@ class ExporterProperties(PropertyGroup):
 
 def getabsfilename(default: str, path: str):
     filename = default
-
-    if (os.path.isabs(path)):
+    if (path != ""):
         filename = path
-    else:
-        if (path != ""):
-            filename = path
+
+    print(os.path.splitext(filename)[1])
+    
+    if (os.path.splitext(filename)[1] == ""):
         filename += ".rmmodel"
-        filename = os.path.join(bpy.path.abspath("//"), filename)
 
     return filename
 
