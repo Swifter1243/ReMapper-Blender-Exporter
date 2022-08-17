@@ -56,8 +56,6 @@ def getabsfilename(default: str, path: str):
     filename = default
     if (path != ""):
         filename = path
-
-    print(os.path.splitext(filename)[1])
     
     if (os.path.splitext(filename)[1] == ""):
         filename += ".rmmodel"
