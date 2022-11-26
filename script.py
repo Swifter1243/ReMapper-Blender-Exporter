@@ -36,6 +36,12 @@ class ExporterProperties(PropertyGroup):
         default=""
     )
 
+    selected: BoolProperty(
+        name="Only Selected",
+        description="Export only selected objects.",
+        default=False
+    )
+
     animations: BoolProperty(
         name="Export Animations",
         description="Whether animations will be exported",
@@ -56,7 +62,7 @@ def getabsfilename(default: str, path: str):
     filename = default
     if (path != ""):
         filename = path
-    
+
     if (os.path.splitext(filename)[1] == ""):
         filename += ".rmmodel"
 
@@ -89,7 +95,7 @@ def processtransform(matrix: Matrix):
     eul.rotate(rot)
     rot = [eul.x, eul.y, eul.z]
 
-    pos = swapyz(tolist(pos, lambda x: x * RESIZEAMOUNT))
+    pos = swapyz(tolist(pos))
     rot = swapyz(tolist(rot, lambda x: -math.degrees(x)))
     scale = swapyz(tolist(scale, lambda x: math.fabs(x) * RESIZEAMOUNT))
 
@@ -116,7 +122,7 @@ def getjsonfromobject(obj: Object):
 
 
 def getobjects(context: Context):
-    if len(context.selected_objects) != 0:
+    if context.scene.paneldata.selected:
         objects = context.selected_objects
     else:
         invisible: List[Object] = []
@@ -266,6 +272,7 @@ class ExporterPanel(Panel):
         paneldata = scene.paneldata
 
         layout.prop(paneldata, "filename")
+        layout.prop(paneldata, "selected")
         layout.prop(paneldata, "animations")
         layout.prop(paneldata, "samplerate")
         layout.operator("rm.exporter")
