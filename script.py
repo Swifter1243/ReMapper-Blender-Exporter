@@ -58,20 +58,6 @@ class ExporterProperties(PropertyGroup):
 # OPERATORS (Main Script)
 
 
-def getabsfilename(default: str, path: str):
-    filename = default
-    if (path != ""):
-        filename = path
-
-    if (os.path.splitext(filename)[1] == ""):
-        filename += ".rmmodel"
-
-    if (os.path.abspath(filename)):
-        filename = bpy.path.abspath("//") + filename
-
-    return filename
-
-
 def tolist(inputarr, callback=None):
     arr = []
     for i in inputarr:
@@ -165,6 +151,7 @@ def pushkeyframe(matrix, time, lookup):
     lookup["rot"].append(transform["rot"])
     lookup["scale"].append(transform["scale"])
 
+
 class ShowObjectColor(Operator):
     bl_label = "Show Object Color"
     bl_idname = "rm.showcolor"
@@ -174,6 +161,7 @@ class ShowObjectColor(Operator):
         context.space_data.shading.color_type = "OBJECT"
         return {'FINISHED'}
 
+
 class BlenderToJSON(Operator):
     bl_label = "Export"
     bl_idname = "rm.exporter"
@@ -182,7 +170,22 @@ class BlenderToJSON(Operator):
     def execute(self, context):
         scene = context.scene
         paneldata = scene.paneldata
-        filename = getabsfilename(scene.name, paneldata.filename)
+
+        path = paneldata.filename
+        filename = scene.name
+        if (path != ""):
+            filename = path
+
+        if (os.path.splitext(filename)[1] == ""):
+            filename += ".rmmodel"
+
+        if (not os.path.isabs(filename)):
+            if (bpy.path.abspath("//") == ""):
+                self.report({"ERROR"},
+                            "Please save your .blend to use a relative path.")
+                return {"CANCELLED"}
+            filename = bpy.path.abspath("//") + filename
+
         output = {
             "objects": []
         }
