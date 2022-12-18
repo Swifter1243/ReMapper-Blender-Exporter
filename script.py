@@ -66,6 +66,9 @@ def getabsfilename(default: str, path: str):
     if (os.path.splitext(filename)[1] == ""):
         filename += ".rmmodel"
 
+    if (os.path.abspath(filename)):
+        filename = bpy.path.abspath("//") + filename
+
     return filename
 
 
