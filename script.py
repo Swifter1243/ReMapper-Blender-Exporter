@@ -165,6 +165,14 @@ def pushkeyframe(matrix, time, lookup):
     lookup["rot"].append(transform["rot"])
     lookup["scale"].append(transform["scale"])
 
+class ShowObjectColor(Operator):
+    bl_label = "Show Object Color"
+    bl_idname = "rm.showcolor"
+    bl_description = "Switch displayed color to object. This is how the exporter exports colors"
+
+    def execute(self, context):
+        context.space_data.shading.color_type = "OBJECT"
+        return {'FINISHED'}
 
 class BlenderToJSON(Operator):
     bl_label = "Export"
@@ -270,6 +278,7 @@ class ExporterPanel(Panel):
         scene = context.scene
         paneldata = scene.paneldata
 
+        layout.operator("rm.showcolor")
         layout.prop(paneldata, "filename")
         layout.prop(paneldata, "selected")
         layout.prop(paneldata, "animations")
@@ -283,6 +292,7 @@ class ExporterPanel(Panel):
 classes = (
     ExporterProperties,
     BlenderToJSON,
+    ShowObjectColor,
     ExporterPanel
 )
 
