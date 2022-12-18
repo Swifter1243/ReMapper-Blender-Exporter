@@ -208,12 +208,8 @@ class BlenderToJSON(Operator):
                         lookup["hasrested"] = True
                     else:
                         if (lookup["hasrested"]):
-                            if (len(lookup["pos"]) == 0):
-                                holdtime = gettime(
-                                    startframe, framedur, startframe)
-                            else:
-                                holdtime = gettime(
-                                    startframe, framedur, frame - 1)
+                            holdtime = gettime(
+                                startframe, framedur, frame - 1)
                             pushkeyframe(
                                 lookup["lastmatrix"], holdtime, lookup)
 
@@ -244,9 +240,9 @@ class BlenderToJSON(Operator):
                 objjson = getjsonfromobject(obj)
                 output["objects"].append(objjson)
 
-        file = open(filename, "w")
-        file.write(json.dumps(output))
-        file.close()
+        modelfile = open(filename, "w")
+        modelfile.write(json.dumps(output))
+        modelfile.close()
 
         self.report({"INFO"}, "Exported {} objects to \"{}\""
                     .format(len(objects), os.path.basename(filename)))
