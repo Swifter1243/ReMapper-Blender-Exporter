@@ -272,10 +272,6 @@ class ExporterPanel(Panel):
     bl_region_type = "UI"
     bl_category = "RM Exporter"
 
-    @classmethod
-    def poll(self, context):
-        return context.object is not None
-
     def draw(self, context):
         layout = self.layout
         scene = context.scene
