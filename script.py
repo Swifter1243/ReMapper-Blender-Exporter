@@ -20,7 +20,7 @@ from mathutils import Euler, Matrix
 bl_info = {
     "name": "ReMapper Exporter",
     "author": "Swifter",
-    "version": "0.05",
+    "version": "0.06",
     "blender": (2, 80, 0),
     "location": "View3d > Sidepanel",
     "description": "Blender Plugin to export scenes into models which are used by ReMapper."
@@ -34,26 +34,26 @@ class ExporterProperties(PropertyGroup):
         name="File Name",
         description="The file to export this model to. Defaults to scene name",
         default=""
-    )
+    ) # type: ignore
 
     selected: BoolProperty(
         name="Only Selected",
         description="Export only selected objects.",
         default=False
-    )
+    ) # type: ignore
 
     animations: BoolProperty(
         name="Export Animations",
         description="Whether animations will be exported",
         default=True
-    )
+    ) # type: ignore
 
     samplerate: IntProperty(
         name="Sample Rate",
         description="The step of keyframe sampling",
         default=1,
         min=1
-    )
+    ) # type: ignore
 
 # OPERATORS (Main Script)
 
@@ -76,21 +76,21 @@ RESIZEAMOUNT = 2
 
 def processtransform(matrix: Matrix):
     transform = matrix.decompose()
-    pos = transform[0]
-    rot = transform[1]
+    position = transform[0]
+    rotation = transform[1]
     scale = transform[2]
 
     eul = Euler([0, 0, 0], "YXZ")
-    eul.rotate(rot)
-    rot = [eul.x, eul.y, eul.z]
+    eul.rotate(rotation)
+    rotation = [eul.x, eul.y, eul.z]
 
-    pos = swapyz(tolist(pos))
-    rot = swapyz(tolist(rot, lambda x: -math.degrees(x)))
+    position = swapyz(tolist(position))
+    rotation = swapyz(tolist(rotation, lambda x: -math.degrees(x)))
     scale = swapyz(tolist(scale, lambda x: math.fabs(x) * RESIZEAMOUNT))
 
     outputjson = {
-        "pos": pos,
-        "rot": rot,
+        "position": position,
+        "rotation": rotation,
         "scale": scale
     }
 
@@ -105,7 +105,7 @@ def getjsonfromobject(obj: Object):
     if (obj.material_slots):
         if (obj.material_slots[0] != None):
             if (obj.material_slots[0].material != None):
-                objjson["track"] = obj.material_slots[0].material.name
+                objjson["group"] = obj.material_slots[0].material.name
 
     return objjson
 
@@ -143,12 +143,12 @@ def gettime(start, dur, frame):
 def pushkeyframe(matrix, time, lookup):
     transform = processtransform(matrix)
 
-    transform["pos"].append(time)
-    transform["rot"].append(time)
+    transform["position"].append(time)
+    transform["rotation"].append(time)
     transform["scale"].append(time)
 
-    lookup["pos"].append(transform["pos"])
-    lookup["rot"].append(transform["rot"])
+    lookup["position"].append(transform["position"])
+    lookup["rotation"].append(transform["rotation"])
     lookup["scale"].append(transform["scale"])
 
 
@@ -187,6 +187,7 @@ class BlenderToJSON(Operator):
             filename = bpy.path.abspath("//") + filename
 
         output = {
+            "version": 2,
             "objects": []
         }
 
@@ -211,8 +212,8 @@ class BlenderToJSON(Operator):
                             "lastmatrix": obj.matrix_world.copy(),
                             "hasrested": False,
                             "data": getjsonfromobject(obj),
-                            "pos": [],
-                            "rot": [],
+                            "position": [],
+                            "rotation": [],
                             "scale": []
                         }
 
@@ -241,9 +242,9 @@ class BlenderToJSON(Operator):
             for lookup in objlookup.values():
                 objjson = lookup["data"]
 
-                if (len(lookup["pos"]) > 0):
-                    objjson["pos"] = lookup["pos"]
-                    objjson["rot"] = lookup["rot"]
+                if (len(lookup["position"]) > 0):
+                    objjson["position"] = lookup["position"]
+                    objjson["rotation"] = lookup["rotation"]
                     objjson["scale"] = lookup["scale"]
 
                 output["objects"].append(objjson)
