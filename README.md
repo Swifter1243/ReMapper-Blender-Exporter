@@ -8,8 +8,7 @@ Different versions of ReMapper work with different versions of the exporter. Her
 | 0.06 | 4.0.0 |
 
 # Installation
-Go to releases, download the `script.py` from the latest release and put it
-somewhere in your computer.
+Go to releases, download the `script.py` from the release you want, and put it somewhere in your computer.
 
 In Blender, open `Edit > Preferences > Add-ons > Install` and navigate to the `script.py`.
 
