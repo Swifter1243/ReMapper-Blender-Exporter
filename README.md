@@ -1,7 +1,13 @@
-# IMPORTANT
-Version 0.04 and above for the exporter will be using new proportions with ReMapper 3.1.0 and above. Models exported with 0.03 and below will not be sized correctly. Use version 0.03 and below with ReMapper 3.0.0 and below.
+# What Version to Use
+Different versions of ReMapper work with different versions of the exporter. Here's how:
 
-# ReMapper Blender Exporter
+| Exporter Version | ReMapper Version |
+|---|---|
+| 0.01...0.03 | 3.0.0 |
+| 0.04...0.05 | 3.1.0 |
+| 0.06 | 4.0.0 |
+
+# Installation
 Go to releases, download the `script.py` from the latest release and put it
 somewhere in your computer.
 
