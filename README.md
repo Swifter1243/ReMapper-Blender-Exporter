@@ -22,6 +22,21 @@ Make sure to enable the plugin after installing. After expanding a part of the U
 <img src="https://user-images.githubusercontent.com/90769470/185506952-71625260-b2fb-46c4-b147-bb332c532cbe.png" alt="screenshot" width="500"/>
 <img src="https://user-images.githubusercontent.com/61858676/183328172-f9cb8533-6dc3-4363-a5cc-70340d3cb1bf.jpg" alt="screenshot" width="500"/>
 
+# Usage
+
+When you are looking at the plugin panel, you'll see a bunch of fields/buttons:
+
+![image](https://github.com/user-attachments/assets/6340077b-1bc2-4d51-b80b-37cbe5ae84c1)
+
+- **Show Object Color** - Switches your viewport to display object color instead of material color. [As explained here](#Interpretation), it's what's used to actually export the `color` property.
+
+- **File Name** - The location of the export. Relative paths are relative to the location of the `.blend`.
+  * Tip: If left blank, it will be exported to a file in the same directory as your `.blend`, with the name of the current Blender scene. This particular feature is useful for having a `.blend` file contain multiple scenes with different environments, each exporting to their own `.rmmodel`.
+- **Only Selected** - Whether to only export objects in the current selection.
+- **Export Animations** - Whether to export objects as animated or use only the first frame of the animation.
+- **Sample Rate** - If `Export Animations` is enabled, the rate to sample the animation keyframes. For example, `1` will export every frame, `2` will export every second frame, `3` will export every third.. etc. The last frame is gauranteed to be sampled, though.
+- **Export** - Export the model.
+
 # File Format Versions
 
 Here's what a `.rmmodel` file looks like:
@@ -75,18 +90,3 @@ For any of these given transformation properties, they may either be **simple** 
 `color` is based on `Object > Viewport Display > Color`. This is to allow objects to have the same material/group while having unique colors.
 
 ![image](https://github.com/user-attachments/assets/d78d9eab-afd4-41e4-8017-9055a4d98740)
-
-# Usage
-
-When you are looking at the plugin panel, you'll see a bunch of fields/buttons:
-
-![image](https://github.com/user-attachments/assets/6340077b-1bc2-4d51-b80b-37cbe5ae84c1)
-
-- **Show Object Color** - Switches your viewport to display object color instead of material color. [As explained here](#Interpretation), it's what's used to actually export the `color` property.
-
-- **File Name** - The location of the export. Relative paths are relative to the location of the `.blend`.
-  * Tip: If left blank, it will be exported to a file in the same directory as your `.blend`, with the name of the current Blender scene. This particular feature is useful for having a `.blend` file contain multiple scenes with different environments, each exporting to their own `.rmmodel`.
-- **Only Selected** - Whether to only export objects in the current selection.
-- **Export Animations** - Whether to export objects as animated or use only the first frame of the animation.
-- **Sample Rate** - If `Export Animations` is enabled, the rate to sample the animation keyframes. For example, `1` will export every frame, `2` will export every second frame, `3` will export every third.. etc. The last frame is gauranteed to be sampled, though.
-- **Export** - Export the model.
