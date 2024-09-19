@@ -1,7 +1,9 @@
 # What Is This?
-ReMapper Blender Exporter is a companion [Blender](https://www.blender.org/) plugin for [ReMapper](https://github.com/Swifter1243/ReMapper) models. It specifically focuses on the [ModelScene](https://github.com/Swifter1243/ReMapper/wiki/Model-Scene) implementation, but the exporter exports objects to `.rmmodel` files in a very general format, representing their positions in the scene.
+ReMapper Blender Exporter is a companion [Blender](https://www.blender.org/) plugin for [ReMapper](https://github.com/Swifter1243/ReMapper) models. It specifically focuses on the [ModelScene](https://github.com/Swifter1243/ReMapper/wiki/Model-Scene) implementation, but the exporter exports objects to `.rmmodel` files in a [very general format](#File-Format-Versions), representing their positions in the scene.
 
-<ins>The exporter is not a requirement for anything Unity related</ins>, as this is mostly intended for [geometry/environment](https://github.com/Aeroluna/Heck/wiki/Environment) statements. 
+### WARNING ⚠️: <ins>The exporter is not a requirement for anything Unity related</ins>, as this is mostly intended for [geometry/environment](https://github.com/Aeroluna/Heck/wiki/Environment) statements. 
+
+### WARNING ⚠️: This exporter does not export mesh information, it purely exports transforms. <ins>Custom meshes, modifiers, or materials will not translate</ins>.
 
 # What Version to Use
 Different versions of ReMapper work with different versions of the exporter. Here's how:
