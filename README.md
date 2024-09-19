@@ -82,7 +82,7 @@ When you are looking at the plugin panel, you'll see a bunch of fields/buttons:
 
 ![image](https://github.com/user-attachments/assets/6340077b-1bc2-4d51-b80b-37cbe5ae84c1)
 
-- **Show Object Color** - Switches your viewport to display object color instead of material color. [As explained here](Interpretation), it's what's used to actually export the `color` property.
+- **Show Object Color** - Switches your viewport to display object color instead of material color. [As explained here](#Interpretation), it's what's used to actually export the `color` property.
 
 - **File Name** - The location of the export. Relative paths are relative to the location of the `.blend`.
   * Tip: If left blank, it will be exported to a file in the same directory as your `.blend`, with the name of the current Blender scene. This particular feature is useful for having a `.blend` file contain multiple scenes with different environments, each exporting to their own `.rmmodel`.
